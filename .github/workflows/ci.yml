@@ -1,0 +1,84 @@
+name: Build, Package, and Deploy Nanoforge
+
+on:
+  push:
+    branches:
+      - ruigbriuabguibarpgib # put here for now to avoid it triggering but will work on this in the future
+  pull_request:
+
+jobs:
+  build-and-package:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+          - target: x86_64-apple-darwin
+            os: macos-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+        target: ${{ matrix.target }}
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --target ${{ matrix.target }}
+    
+    - name: Package for Debian (Linux Only)
+      if: matrix.target == 'x86_64-unknown-linux-gnu'
+      run: |
+        sudo apt-get update
+        sudo apt-get install cargo-deb
+        cargo deb --target ${{ matrix.target }}
+        mkdir -p deploy/debian
+        mv target/${{ matrix.target }}/debian/*.deb deploy/debian/nanoforge_${{ steps.vars.outputs.version }}_${{ matrix.target }}.deb
+
+    - name: Prepare Homebrew Formula (macOS Only)
+      if: matrix.target == 'x86_64-apple-darwin'
+      run: |
+        mkdir -p deploy/homebrew
+        echo "class Nanoforge < Formula
+          desc \"A command-line tool for forging nanoscale materials\"
+          homepage \"https://example.com\"
+          url \"URL to macOS binary\"
+          sha256 \"SHA256 of macOS binary\"
+      
+          def install
+            bin.install \"nanoforge\"
+          end
+        end" > deploy/homebrew/nanoforge.rb
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: deploy-packages
+        path: deploy/
+
+  deploy:
+    needs: build-and-package
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/download-artifact@v2
+      with:
+        name: deploy-packages
+
+    - name: Publish to APT Repository (Placeholder)
+      run: |
+        echo "Publish .deb package to your Debian repository here"
+        # Add actual commands to upload the .deb file to your APT repository
+
+    - name: Publish Homebrew Formula (Placeholder)
+      run: |
+        echo "Publish Homebrew formula to your tap repository here"
+        # Add actual commands to push the Homebrew formula to a GitHub repository configured as a tap
