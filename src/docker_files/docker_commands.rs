@@ -20,8 +20,8 @@ pub fn save_docker_image(image_name: &str, tar_path: &str) -> std::io::Result<St
     pull_docker_image(image_name)?; // Ensure the image is pulled before saving it
 
     let tar_path = std::path::Path::new(tar_path);
-    let tar_file = image_name.clone();
-    let tar_file = tar_file.replace("/", "_");
+    let tar_file = image_name;
+    let tar_file = tar_file.replace("/", "_").replace(":", "_");
     let unpack_tar_path = tar_path.join(format!("{}.tar", tar_file));
     let package_path = tar_path.join(tar_file);
 
@@ -31,7 +31,7 @@ pub fn save_docker_image(image_name: &str, tar_path: &str) -> std::io::Result<St
     // }
     println!("Tar path: {:?}", tar_path);
 
-    let outcome = Command::new("docker")
+    let _ = Command::new("docker")
         .args(["save", "-o", unpack_tar_path.to_str().unwrap(), image_name])
         .status()?;
     let tar_file = File::open(unpack_tar_path)?;

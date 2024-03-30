@@ -4,7 +4,7 @@ pub mod docker_commands;
 
 
 pub fn download_nanoservice(image: &str) -> std::io::Result<String> {
-    let image_file = image.replace("/", "_");
+    let image_file = image.replace("/", "_").replace(":", "_");
     let main_path = docker_commands::save_docker_image(
         image,
         cache::CACHE_NANOSERVICES_TAR_DIR.to_str().unwrap(),

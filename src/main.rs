@@ -1,6 +1,3 @@
-mod dependencies;
-mod files;
-mod cache;
 mod toml_operations;
 mod docker_files;
 
@@ -16,7 +13,7 @@ fn main() {
         let (cargo_dependencies, all_nanoservices) = toml_operations::get_all_nanoservices();
 
         // download all the nanoservices from docker
-        for (name, nanoservice) in all_nanoservices {
+        for (_name, nanoservice) in all_nanoservices {
             let _path = docker_files::download_nanoservice(&nanoservice.dev_image).unwrap();
         }
 

@@ -48,7 +48,11 @@ pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) {
         nanoservice_table.insert(
             "path".to_string(),
             Value::String(
-                finder::calculate_relative_path(&path, nanoservice.dev_image).to_str().unwrap().to_string()
+                finder::calculate_relative_path(
+                    &path,
+                    nanoservice.dev_image,
+                    nanoservice.entrypoint
+                ).to_str().unwrap().to_string()
             )
         );
         cargo_toml.dependencies.insert(name, toml::Value::Table(nanoservice_table));

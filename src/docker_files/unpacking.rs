@@ -5,6 +5,7 @@ use serde_json::Value;
 use tar::Archive;
 use flate2::read::GzDecoder;
 
+
 // Function to read a JSON file and parse it
 fn read_json_file<P: AsRef<Path>>(path: P) -> serde_json::Result<Value> {
     let mut file = File::open(path).unwrap();
@@ -12,6 +13,7 @@ fn read_json_file<P: AsRef<Path>>(path: P) -> serde_json::Result<Value> {
     file.read_to_string(&mut contents).unwrap();
     serde_json::from_str(&contents)
 }
+
 
 // Example function to extract the layers from the manifest
 pub fn extract_layers(main_path: &str, unpack_path: &str) -> std::io::Result<String> {
@@ -30,7 +32,7 @@ pub fn extract_layers(main_path: &str, unpack_path: &str) -> std::io::Result<Str
         println!("Found {} layers in manifest", layers.len());
         for layer in layers {
             println!("Extracting layer: {}", layer);
-            let base_path = blobs_dir.clone();
+            let base_path = blobs_dir;
             let layer_path = base_path.join(layer.as_str().unwrap());
 
             // Extract the layer's tarball to a directory

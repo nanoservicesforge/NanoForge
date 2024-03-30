@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use toml::{Value, Table};
+use toml::Value;
 use std::collections::HashMap;
 use std::fs;
 
@@ -28,7 +28,7 @@ pub struct Nanoservice {
 pub fn read_toml(cargo_toml_path: &str) -> CargoToml {
     let cargo_toml_contents = fs::read_to_string(cargo_toml_path)
         .expect("Failed to read Cargo.toml");
-    let mut cargo_toml: CargoToml = toml::from_str(&cargo_toml_contents)
+    let cargo_toml: CargoToml = toml::from_str(&cargo_toml_contents)
         .expect("Failed to parse Cargo.toml");
     return cargo_toml
 }
