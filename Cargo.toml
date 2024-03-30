@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 license = "BSD-2"
 authors = ["Maxwell Flitton", "Caroline Morton"]
+description = " A tool for pulling docker images, unpacking them, and compiling them into a Rust project"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
