@@ -1,3 +1,4 @@
+//! Defines the actions around reading, writing, and configuring TOML files.
 pub mod read;
 pub mod finder;
 use std::collections::{
@@ -9,9 +10,17 @@ use read::Nanoservice;
 use toml::{Table, Value};
 
 
+/// Gets all the nanoservices from the TOML files in the current directory.
+///
+/// # Returns
+/// All the paths to the TOML files and the nanoservices in them,
+/// A HashSet of all the nanoservices found in all the TOML files.
 pub fn get_all_nanoservices()
     -> (HashMap<std::path::PathBuf, Vec<(String, Nanoservice)>>, HashSet<(String, Nanoservice)>) {
+    // get all the paths to the cargo files
     let cargo_paths = finder::find_all_cargos().unwrap();
+
+    // define the hashmap to hold the cargo dependencies
     let mut cargo_dependencies = HashMap::new();
     let mut all_nanoservices = HashSet::new();
 
@@ -21,11 +30,13 @@ pub fn get_all_nanoservices()
 
         let mut buffer = Vec::new();
 
+        // break the loop if there are no nanoservices in the cargo file
         let nanos = match cargo_toml.nanoservices {
             Some(nanos) => nanos,
             None => continue
         };
 
+        // loop through the nanoservices and add them to the buffer and all nanoservices hashset
         for nanoservice in nanos {
             buffer.push(nanoservice.clone());
             all_nanoservices.insert(nanoservice);
@@ -39,6 +50,15 @@ pub fn get_all_nanoservices()
 }
 
 
+/// Configures a Cargo.toml file with the nanoservices relative path and adds this relative path
+/// to the dependencies section so the nanoservice can be built into the project.
+///
+/// # Arguments
+/// * `path` - The path to the Cargo.toml file to configure.
+/// * `nanos` - A vector of tuples containing the name of the nanoservice and the Nanoservice struct.
+///
+/// # Returns
+/// None
 pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) {
     let mut cargo_toml = read::read_toml(path.to_str().unwrap());
 
@@ -57,6 +77,5 @@ pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) {
         );
         cargo_toml.dependencies.insert(name, toml::Value::Table(nanoservice_table));
     }
-
     read::write_toml(path.to_str().unwrap(), cargo_toml);
 }

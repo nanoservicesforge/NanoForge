@@ -1,3 +1,4 @@
+//! Defines the actions around unpacking compressed Docker files from the manifest.
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
@@ -6,7 +7,14 @@ use tar::Archive;
 use flate2::read::GzDecoder;
 
 
-// Function to read a JSON file and parse it
+/// Reads a JSON file.
+///
+/// # Notes
+/// This function is mainly used for reading the manifest.json file in the unpacked Docker image
+/// directory so we can extract the layers.
+///
+/// # Arguments
+/// * `path` - Path to the JSON file being read.
 fn read_json_file<P: AsRef<Path>>(path: P) -> serde_json::Result<Value> {
     let mut file = File::open(path).unwrap();
     let mut contents = String::new();
@@ -15,7 +23,14 @@ fn read_json_file<P: AsRef<Path>>(path: P) -> serde_json::Result<Value> {
 }
 
 
-// Example function to extract the layers from the manifest
+/// Decompresses the layers from the Docker image and extracts them to a directory.
+///
+/// # Arguments
+/// * `main_path` - The path to the compressed extracted layers from the Docker image.
+/// * `unpack_path` - The path to where the layers will be extracted.
+///
+/// # Returns
+/// The path to where the layers are extracted.
 pub fn extract_layers(main_path: &str, unpack_path: &str) -> std::io::Result<String> {
 
     let manifest_path = std::path::Path::new(main_path).join("manifest.json");

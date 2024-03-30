@@ -1,14 +1,27 @@
+//! Defines the actions around finding all the Cargo.toml files in the current directory.
 use walkdir::{DirEntry, WalkDir};
 use std::path::PathBuf;
 use pathdiff::diff_paths;
 use crate::docker_files::cache::CACHE_NANOSERVICES_DIR;
 
 
+/// Checks if the entry is a Cargo.toml file.
+///
+/// # Arguments
+/// * `entry` - A reference to the DirEntry to check.
+///
+/// # Returns
+/// A boolean value indicating if the entry is a Cargo.toml file.
 fn is_cargo_toml(entry: &DirEntry) -> bool {
     entry.file_name() == "Cargo.toml"
 }
 
 
+/// Finds all the Cargo.toml files in the current directory and all subdirectories as long as they
+/// are not in the `.nanoservices_cache directory`.
+///
+/// # Returns
+/// A vector of all the paths to the Cargo.toml files.
 pub fn find_all_cargos() -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
     let current_dir = std::env::current_dir()?;
     let excluded_dir = current_dir.join(".nanoservices_cache");
@@ -27,6 +40,18 @@ pub fn find_all_cargos() -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
 }
 
 
+/// Calculates the relative path to the extracted nanoservice and the Cargo.toml file.
+///
+/// # Notes
+/// entrypoint of the nanoservice is also added to the relative path at the end.
+///
+/// # Arguments
+/// * `cargo_path` - The path to the Cargo.toml file.
+/// * `image` - The name of the Docker image.
+/// * `entry` - The entrypoint of the nanoservice.
+///
+/// # Returns
+/// The relative path to the extracted nanoservice.
 pub fn calculate_relative_path(cargo_path: &PathBuf, image: String, entry: String) -> PathBuf {
     let current_dir = std::env::current_dir().unwrap();
     let base_path = cargo_path.parent().unwrap();

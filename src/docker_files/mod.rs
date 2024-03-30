@@ -1,8 +1,16 @@
+//! Defines the actions around downloading and unpacking docker images to access the files.
 pub mod unpacking;
 pub mod cache;
 pub mod docker_commands;
 
 
+/// Downloads a docker image and unpacks it to the nanoservices cache directory.
+///
+/// # Arguments
+/// * `image` - A string slice that holds the name of the docker image to download.
+///
+/// # Returns
+/// The paths to where the files have been unpacked to from the docker image
 pub fn download_nanoservice(image: &str) -> std::io::Result<String> {
     let image_file = image.replace("/", "_").replace(":", "_");
     let main_path = docker_commands::save_docker_image(
