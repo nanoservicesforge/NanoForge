@@ -6,7 +6,10 @@ fn main() {
     println!("Hello, nanoservices!! .... That's so dingo!");
     // get the first argument passed to the program
     let args: Vec<String> = std::env::args().collect();
-    let command = &args[1];
+    let command = match args.get(1) {
+        Some(v) => v,
+        _ => return println!("No command specified"),
+    };
 
     if command == "prep" {
         docker_files::cache::wipe_and_create_cache();
@@ -21,7 +24,11 @@ fn main() {
             toml_operations::config_cargo(path, nanoservices);
         }
     } else if command == "pull" {
-        let image = &args[2];
+        let image = match args.get(2) {
+            Some(v) => v,
+            _ => return println!("No image specified"),
+        };
+
         let _path = docker_files::download_nanoservice(image).unwrap();
     }
     else {
