@@ -1,36 +1,38 @@
 #!/bin/bash
 
-git clone git@github.com:nanoservicesforge/NanoForge.git
+DIR=`mktemp -d`
+
+git clone git@github.com:nanoservicesforge/NanoForge.git $DIR
 
 
 # Compile the project
 # This step varies greatly depending on the project. Adjust as necessary.
-cd NanoForge
+cd $DIR
 
 cargo build --release
-cd ..
-
 
 # Check for OS and move the binary to the system's bin directory
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     # Linux
-    if [[ /usr/local/bin/nanoforge ]]; then
+    if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
     fi
-    sudo mv NanoForge/target/release/nanoforge /usr/local/bin/
-    rm -rf NanoForge
+    sudo mv target/release/nanoforge /usr/local/bin/
+    rm -rf $DIR
 
 
+# macOS
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    if [[ /usr/local/bin/nanoforge ]]; then
+    if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
     fi
-    sudo mv NanoForge/target/release/nanoforge /usr/local/bin/
-    rm -rf NanoForge
+    sudo mv target/release/nanoforge /usr/local/bin/
+    rm -rf $DIR
+
+# Unsupported
 else
     echo "Unsupported OS"
-    rm -rf NanoForge
+    rm -rf $DIR
     exit 1
 fi
 
