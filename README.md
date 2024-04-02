@@ -10,7 +10,7 @@ We want to work on packaging for operating systems later but for now you can ins
 wget -qO- https://raw.githubusercontent.com/nanoservicesforge/NanoForge/main/scripts/install.sh | sh
 ```
 
-## Quickstart: using Docker as a private crates registry with NanoForge
+## Quickstart: using Docker as a crates registry with NanoForge
 
 Even though NanoForge is a build tool for nanoservices, it can be used to build and run any Rust project as
 NanoForge essentially scans all the `Cargo.toml` files in the subdirectories of the project. NanoForge then
@@ -63,7 +63,7 @@ We can then perform a `cargo run` and we will see that we can use the code unpac
 Docker image. You can define multiple Dkcer images in your `Cargo.toml` file and NanoForge will
 pull and unpack all of them.
 
-## Packageing Code
+## Packaging Code
 
 To package a nanoservice and build it using `scratch` as seen below:
 
