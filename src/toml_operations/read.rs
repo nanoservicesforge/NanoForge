@@ -39,11 +39,13 @@ pub struct Package {
 /// * `dev_image` - The development Docker image of the nanoservice (to pull in dev environments).
 /// * `prod_image` - The production Docker image of the nanoservice (to pull in prod environments).
 /// * `entrypoint` - The entrypoint of the nanoservice (where the terminal has to point inside for the build).
+/// * `features` - The enabled features of the nanoservice (optional).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
 pub struct Nanoservice {
     pub dev_image: String,
     pub prod_image: String,
     pub entrypoint: String,
+    pub features: Option<Vec<String>>,
 }
 
 

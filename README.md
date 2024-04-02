@@ -10,20 +10,20 @@ We want to work on packaging for operating systems later but for now you can ins
 wget -qO- https://raw.githubusercontent.com/nanoservicesforge/NanoForge/main/scripts/install.sh | sh
 ```
 
-## Usage
+## Quickstart: using Docker as a private crates registry using NanoForge
 
-Before we can use NanoForge we need to package a nanoservice and build it using `scratch` as seen below:
+Even though NanoForge is a build tool for nanoservices, it can be used to build and run any Rust project as
+NanoForge essentially scans all the `Cargo.toml` files in the subdirectories of the project. NanoForge then
+collects all the Docker images declared in the `Cargo.toml` files and pulls them into a cache. NanoForge then
+unpacks the files from the downloaded Docker images and calculates the relative path for each unpacked Docker
+image. These relative paths are then inserted into the dependency section of the `Cargo.toml` files that declared
+the Docker image. To test this, we can build a toy example by creating a new project with the command below:
 
-```Dockerfile
-FROM scratch
+```bash
+cargo new nanoforge-test
+````
 
-COPY ./your_package .
-```
-
-## Declaring a nanoservice in your build
-
-And this is enough to package your nanoservice in a Docker image. Now we move onto declaring our nanoservice in our
-`Cargo.toml` with the following (`nan-one` is a real toy example of a nanoservice on Docker Hub):
+In the `Cargo.toml` file, we then declare the following nanoservice:
 
 ```toml
 [nanoservices.nan-one]
@@ -32,22 +32,43 @@ prod_image = "maxwellflitton/nan-one"
 entrypoint = "."
 ```
 
-## Preparing your build
-
-Now we can prepare our build using the following command (you pwd should be the root of your project):
+This means that NanoForge will pull the `maxwellflitton/nan-one` Docker image and unpack it in the cache. The
+`entrypoint` field is what is added to the relative path of the unpacked Docker image. This is useful if the
+build needs to point to a particular subdirectory of the unpacked Docker image. We can then prepare the build
+with the following command:
 
 ```bash
 nanoforge prep
-```
+````
 
-This command will create a `.nanoservices_cache` and pull the Docker image unpacking the files into the cache. The
-build tool will then scan all subdirectories looking for nanoservices in all the `Cargo.toml` files in the project.
-The relative path will then be calculated for each nanoservice and defined in the `Cargo.toml` files. For instance,
-our `nan-one` nanoservice will have the following path:
+Once the Docker unpacking is done, we can see that the build is pointed to in the `Cargo.toml` file:
 
 ```toml
 [dependencies.nan-one]
 path = "../.nanoservices_cache/domain_services/nanoservices/maxwellflitton_nan-one/."
 ```
 
-You can then use this in your build.
+We can then use this package in our `main.rs` file with the following code:
+
+```rust
+use nan_one::hello;
+
+fn main() {
+    println!("Hello, world!");
+    hello();
+}
+```
+
+We can then perform a `cargo run` and we will see that we can use the code unpacked from the
+Docker image. You can define multiple Dkcer images in your `Cargo.toml` file and NanoForge will
+pull and unpack all of them.
+
+## Packageing Code
+
+To package a nanoservice and build it using `scratch` as seen below:
+
+```Dockerfile
+FROM scratch
+
+COPY ./your_package .
+```
