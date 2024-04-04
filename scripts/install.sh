@@ -9,6 +9,9 @@ git clone git@github.com:nanoservicesforge/NanoForge.git $DIR
 # This step varies greatly depending on the project. Adjust as necessary.
 cd $DIR
 
+# remove the .git folder. This stops it from being "seen" as a git repo. 
+rm -rf .git
+
 cargo build --release
 
 # Check for OS and move the binary to the system's bin directory
