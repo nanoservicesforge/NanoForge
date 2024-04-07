@@ -2,6 +2,13 @@
 use std::process::Command;
 use tar::Archive;
 use std::fs::File;
+use nanoservices_utils::{
+    safe_eject,
+    errors::{
+        NanoServiceError,
+        NanoServiceErrorStatus
+    }
+};
 
 
 /// Pulls a docker image from the docker registry.
@@ -11,15 +18,22 @@ use std::fs::File;
 ///
 /// # Returns
 /// None
-pub fn pull_docker_image(image_name: &str) -> std::io::Result<()> {
-    let status = Command::new("docker")
+pub fn pull_docker_image(image_name: &str) -> Result<(), NanoServiceError> {
+    let status = safe_eject!(Command::new("docker")
         .args(["pull", image_name])
-        .status()?;
+        .status(),
+        NanoServiceErrorStatus::Unknown,
+        "Failed to run pull Docker image command in NanoForge"
+    )?;
 
     if status.success() {
         Ok(())
     } else {
-        Err(std::io::Error::new(std::io::ErrorKind::Other, "Failed to pull Docker image"))
+        Err(NanoServiceError::new(
+            "Failed to pull Docker image in NanoForge".to_string(),
+            NanoServiceErrorStatus::Unknown
+            )
+        )
     }
 }
 
@@ -35,22 +49,56 @@ pub fn pull_docker_image(image_name: &str) -> std::io::Result<()> {
 ///
 /// # Returns
 /// The path to where the compressed Docker image files are stored
-pub fn save_docker_image(image_name: &str, tar_path: &str) -> std::io::Result<String> {
+pub fn save_docker_image(image_name: &str, tar_path: &str) -> Result<String, NanoServiceError> {
     pull_docker_image(image_name)?; // Ensure the image is pulled before saving it
 
     let tar_path = std::path::Path::new(tar_path);
     let tar_file = image_name;
     let tar_file = tar_file.replace("/", "_").replace(":", "_");
-    let unpack_tar_path = tar_path.join(format!("{}.tar", tar_file));
+
+    let binding = tar_path.join(format!("{}.tar", tar_file));
+    let unpack_tar_path = match binding.to_str() {
+        Some(v) => v,
+        None => {
+            return Err(NanoServiceError::new(
+                "Failed to convert path to string in NanoForge".to_string(),
+                NanoServiceErrorStatus::Unknown
+                )
+            )
+        }
+    };
     let package_path = tar_path.join(tar_file);
 
     println!("Tar path: {:?}", tar_path);
 
-    let _ = Command::new("docker")
-        .args(["save", "-o", unpack_tar_path.to_str().unwrap(), image_name])
-        .status()?;
-    let tar_file = File::open(unpack_tar_path)?;
+    let _ = safe_eject!(Command::new("docker")
+        .args(["save", "-o", unpack_tar_path, image_name])
+        .status(),
+        NanoServiceErrorStatus::Unknown,
+        "Failed to run save Docker image command in NanoForge"
+    )?;
+    let tar_file = safe_eject!(
+        File::open(unpack_tar_path),
+        NanoServiceErrorStatus::Unknown,
+        "Failed to open Docker image in NanoForge"
+    )?;
     let mut archive = Archive::new(tar_file);
-    archive.unpack(&package_path).unwrap();
-    Ok(package_path.to_str().unwrap().to_string())
+
+    safe_eject!(
+        archive.unpack(&package_path),
+        NanoServiceErrorStatus::Unknown,
+        "Failed to unpack Docker image in NanoForge"
+    )?;
+
+    // return statement
+    Ok(match package_path.to_str() {
+        Some(v) => v.to_string(),
+        None => {
+            return Err(NanoServiceError::new(
+                "Failed to convert path to string in NanoForge".to_string(),
+                NanoServiceErrorStatus::Unknown
+                )
+            )
+        }
+    })
 }

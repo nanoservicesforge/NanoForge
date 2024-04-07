@@ -8,7 +8,17 @@ use std::collections::{
 use std::path::PathBuf;
 use read::Nanoservice;
 use toml::{Table, Value};
-use crate::toml_operations::read::CargoToml;
+use crate::toml_operations::read::RawCargoToml;
+use nanoservices_utils::{
+    safe_eject,
+    errors::{
+        NanoServiceError,
+        NanoServiceErrorStatus
+    }
+};
+
+pub type CargoDependencies = HashMap<std::path::PathBuf, Vec<(String, Nanoservice)>>;
+pub type AllNanoservices = HashSet<(String, Nanoservice)>;
 
 
 /// Gets all the nanoservices from the TOML files in the current directory.
@@ -16,10 +26,13 @@ use crate::toml_operations::read::CargoToml;
 /// # Returns
 /// All the paths to the TOML files and the nanoservices in them,
 /// A HashSet of all the nanoservices found in all the TOML files.
-pub fn get_all_nanoservices()
-    -> (HashMap<std::path::PathBuf, Vec<(String, Nanoservice)>>, HashSet<(String, Nanoservice)>) {
+pub fn get_all_nanoservices() -> Result<(CargoDependencies, AllNanoservices), NanoServiceError> {
     // get all the paths to the cargo files
-    let cargo_paths = finder::find_all_cargos().unwrap();
+    let cargo_paths = safe_eject!(
+        finder::find_all_cargos(),
+        NanoServiceErrorStatus::NotFound,
+        "Getting all cargo paths when getting all nanoservices"
+    )?;
 
     // define the hashmap to hold the cargo dependencies
     let mut cargo_dependencies = HashMap::new();
@@ -27,7 +40,10 @@ pub fn get_all_nanoservices()
 
     for cargo_path in cargo_paths {
         println!("cargo_path: {:?}", cargo_path);
-        let mut cargo_toml = read::read_toml(cargo_path.to_str().unwrap());
+        let mut cargo_toml = match read::read_toml(cargo_path.to_str().unwrap())?.into_raw() {
+            Some(raw_dog) => raw_dog,
+            None => continue
+        };
         wipe_nanoservices(&mut cargo_toml);
 
         let mut buffer = Vec::new();
@@ -38,7 +54,7 @@ pub fn get_all_nanoservices()
                 // break the loop if there are no nanoservices in the cargo file
                 // write the cargo file back to the disk as the nanoservices might
                 // have been wiped
-                read::write_toml(cargo_path.to_str().unwrap(), cargo_toml);
+                read::write_toml(cargo_path.to_str().unwrap(), cargo_toml)?;
                 continue;
             }
         };
@@ -52,7 +68,7 @@ pub fn get_all_nanoservices()
             cargo_dependencies.insert(cargo_path, buffer);
         }
     }
-    return (cargo_dependencies, all_nanoservices)
+    return Ok((cargo_dependencies, all_nanoservices))
 }
 
 
@@ -63,10 +79,9 @@ pub fn get_all_nanoservices()
 ///
 /// # Returns
 /// None
-fn wipe_nanoservices(cargo_toml_file: &mut CargoToml) {
+fn wipe_nanoservices(cargo_toml_file: &mut RawCargoToml) {
     println!("Wiping nanoservices");
     for (name, value) in cargo_toml_file.dependencies.clone() {
-        println!("name: {}", name);
         match value {
             Value::Table(table) => {
                 match table.get("path") {
@@ -95,9 +110,17 @@ fn wipe_nanoservices(cargo_toml_file: &mut CargoToml) {
 ///
 /// # Returns
 /// None
-pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) {
-    let mut cargo_toml = read::read_toml(path.to_str().unwrap());
-
+pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) -> Result<(), NanoServiceError> {
+    // exit the function early if the cargo.toml is not valid
+    let mut cargo_toml = match read::read_toml(path.to_str().unwrap())?.into_raw() {
+        Some(raw_dog) => raw_dog,
+        None => return Err(
+            NanoServiceError::new(
+                "Failed to read the Cargo.toml file when configuring the Cargo.toml file".to_string(),
+                NanoServiceErrorStatus::Unknown
+            )
+        )
+    };
     // loop through nanos and add them to the dependencies section as tables
     for (name, nanoservice) in nanos {
         let mut nanoservice_table = Table::new();
@@ -127,7 +150,7 @@ pub fn config_cargo(path: PathBuf, nanos:  Vec<(String, Nanoservice)>) {
         }
         cargo_toml.dependencies.insert(name, toml::Value::Table(nanoservice_table));
     }
-    read::write_toml(path.to_str().unwrap(), cargo_toml);
+    read::write_toml(path.to_str().unwrap(), cargo_toml)
 }
 
 
@@ -157,7 +180,7 @@ mod tests {
         );
         dependencies.insert("test4".to_string(), Value::Table(nanoservice_table));
 
-        let mut cargo_toml = CargoToml {
+        let mut cargo_toml = RawCargoToml {
             package: Package {
                 name: "test".to_string(),
                 version: "0.1.0".to_string(),

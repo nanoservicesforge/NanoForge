@@ -17,5 +17,6 @@ serde = { version = "1.0.197", features = ["derive"] }
 toml = "0.8.12"
 walkdir = "2.5.0"
 pathdiff = "0.2.1"
+nanoservices-utils = "0.1.0"
 
 [dev-dependencies]

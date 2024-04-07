@@ -3,9 +3,18 @@ use serde::{Deserialize, Serialize};
 use toml::Value;
 use std::collections::HashMap;
 use std::fs;
+use nanoservices_utils::{
+    safe_eject,
+    errors::{
+        NanoServiceError,
+        NanoServiceErrorStatus
+    }
+};
 
 
-/// Represents the structure of a Cargo.toml file.
+/// Represents the structure of a Cargo.toml file for file loading.
+/// This is needed when reading Cargo.toml files such as workspaces that
+/// do no have packages or dependencies.
 ///
 /// # Fields
 /// * `package` - The package section of the Cargo.toml file.
@@ -13,6 +22,31 @@ use std::fs;
 /// * `nanoservices` - The nanoservices section of the Cargo.toml file.
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CargoToml {
+    pub package: Option<Package>,
+    pub dependencies: Option<HashMap<String, Value>>,
+    pub nanoservices: Option<HashMap<String, Nanoservice>>,
+}
+
+impl CargoToml {
+
+    /// If all the fields are Some, returns the RawCargoToml struct.
+    ///
+    /// # Returns
+    /// * `Some(RawCargoToml)` - If all fields are Some.
+    pub fn into_raw(self) -> Option<RawCargoToml> {
+        let package = self.package?;
+        let dependencies = self.dependencies?;
+        let nanoservices = self.nanoservices;
+        Some(RawCargoToml { package, dependencies, nanoservices })
+    }
+
+}
+
+
+/// Represents the structure of a Cargo.toml file for file saving and manipulation
+/// of the cargo file in relation to configuring of nanoservices and dependencies.
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RawCargoToml {
     pub package: Package,
     pub dependencies: HashMap<String, Value>,
     pub nanoservices: Option<HashMap<String, Nanoservice>>,
@@ -56,12 +90,18 @@ pub struct Nanoservice {
 ///
 /// # Returns
 /// A CargoToml struct representing the parsed Cargo.toml file.
-pub fn read_toml(cargo_toml_path: &str) -> CargoToml {
-    let cargo_toml_contents = fs::read_to_string(cargo_toml_path)
-        .expect("Failed to read Cargo.toml");
-    let cargo_toml: CargoToml = toml::from_str(&cargo_toml_contents)
-        .expect("Failed to parse Cargo.toml");
-    return cargo_toml
+pub fn read_toml(cargo_toml_path: &str) -> Result<CargoToml, NanoServiceError> {
+    let cargo_toml_contents = safe_eject!(
+        fs::read_to_string(cargo_toml_path),
+        NanoServiceErrorStatus::Unknown,
+        format!("Failed to read Cargo.toml: {}", cargo_toml_path)
+    )?;
+    let cargo_toml: CargoToml = safe_eject!(
+        toml::from_str(&cargo_toml_contents),
+        NanoServiceErrorStatus::Unknown,
+        format!("Failed to parse Cargo.toml: {}", cargo_toml_path)
+    )?;
+    Ok(cargo_toml)
 }
 
 
@@ -73,7 +113,16 @@ pub fn read_toml(cargo_toml_path: &str) -> CargoToml {
 ///
 /// # Returns
 /// None
-pub fn write_toml(cargo_toml_path: &str, cargo_toml: CargoToml) {
-    let modified_toml = toml::to_string(&cargo_toml).expect("Failed to serialize Cargo.toml");
-    fs::write(cargo_toml_path, modified_toml).expect("Failed to write Cargo.toml");
+pub fn write_toml(cargo_toml_path: &str, cargo_toml: RawCargoToml) -> Result<(), NanoServiceError> {
+    let modified_toml = safe_eject!(
+        toml::to_string(&cargo_toml),
+        NanoServiceErrorStatus::Unknown,
+        format!("Failed to serialize Cargo.toml for writing: {}", cargo_toml_path)
+    )?;
+    safe_eject!(
+        fs::write(cargo_toml_path, modified_toml),
+        NanoServiceErrorStatus::Unknown,
+        format!("Failed to write Cargo.toml: {}", cargo_toml_path)
+    )?;
+    Ok(())
 }
