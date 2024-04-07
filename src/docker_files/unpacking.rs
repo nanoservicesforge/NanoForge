@@ -87,8 +87,6 @@ pub fn extract_layers(main_path: &str, unpack_path: &str) -> Result<String, Nano
             println!("Extracting layer: {}", layer);
             let base_path = blobs_dir;
 
-
-
             let layer_path = base_path.join(
                 
                 match layer.as_str() {

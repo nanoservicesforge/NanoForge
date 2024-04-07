@@ -27,7 +27,14 @@ fn main() -> Result<(), NanoServiceError> {
 
         // download all the nanoservices from docker
         for (_name, nanoservice) in all_nanoservices {
-            let _path = docker_files::download_nanoservice(&nanoservice.dev_image).unwrap();
+            // bypass downloading the image if local is set to true
+            let local = match nanoservice.local {
+                Some(v) => v,
+                _ => false,
+            };
+            if !local {
+                let _path = docker_files::download_nanoservice(&nanoservice.dev_image)?;
+            }
         }
 
         for (path, nanoservices) in cargo_dependencies {
@@ -45,7 +52,7 @@ fn main() -> Result<(), NanoServiceError> {
             },
         };
 
-        let _path = docker_files::download_nanoservice(image).unwrap();
+        let _path = docker_files::download_nanoservice(image)?;
     }
     else {
         println!("Command not found");

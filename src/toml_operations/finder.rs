@@ -52,8 +52,8 @@ pub fn find_all_cargos() -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
 ///
 /// # Returns
 /// The relative path to the extracted nanoservice.
-pub fn calculate_relative_path(cargo_path: &PathBuf, image: String, entry: String) -> PathBuf {
-    let current_dir = std::env::current_dir().unwrap();
+pub fn calculate_relative_path(cargo_path: &PathBuf, image: String, entry: String) -> std::io::Result<PathBuf> {
+    let current_dir = std::env::current_dir()?;
     let base_path = cargo_path.parent().unwrap();
     let target_path = CACHE_NANOSERVICES_DIR.clone();
     let stripped_target_path = target_path.strip_prefix(&current_dir).unwrap();
@@ -61,5 +61,5 @@ pub fn calculate_relative_path(cargo_path: &PathBuf, image: String, entry: Strin
     let stripped_target_path = stripped_target_path.join(processed_image);
     let relative_path = diff_paths(
         stripped_target_path, base_path).unwrap();
-    relative_path.join(entry)
+    Ok(relative_path.join(entry))
 }
