@@ -40,9 +40,6 @@ pub fn calculate_relative_path(
     let processed_image = process_image_name(&image);
     let stripped_target_path = stripped_target_path.join(processed_image);
 
-    println!("target: {:?}", stripped_target_path);
-    println!("base: {:?}", stripped_base_path);
-
     let relative_path = match diff_paths(stripped_target_path, stripped_base_path) {
         Some(path) => path,
         None => return Err(
