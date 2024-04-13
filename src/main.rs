@@ -5,6 +5,7 @@ use nanoservices_utils::errors::{
     NanoServiceError,
     NanoServiceErrorStatus
 };
+use toml_operations::nanoservices::processes::prep_nanoservices_once;
 
 
 fn main() -> Result<(), NanoServiceError> {
@@ -22,24 +23,8 @@ fn main() -> Result<(), NanoServiceError> {
     };
 
     if command == "prep" {
-        docker_files::cache::wipe_and_create_cache();
-        let (cargo_dependencies, all_nanoservices) = toml_operations::get_all_nanoservices()?;
-
-        // download all the nanoservices from docker
-        for (_name, nanoservice) in all_nanoservices {
-            // bypass downloading the image if local is set to true
-            let local = match nanoservice.local {
-                Some(v) => v,
-                _ => false,
-            };
-            if !local {
-                let _path = docker_files::download_nanoservice(&nanoservice.dev_image)?;
-            }
-        }
-
-        for (path, nanoservices) in cargo_dependencies {
-            toml_operations::config_cargo(path, nanoservices)?;
-        }
+        println!("prepping nanos");
+        prep_nanoservices_once().unwrap();
     } else if command == "pull" {
         let image = match args.get(2) {
             Some(v) => v,

@@ -1,0 +1,19 @@
+[package]
+name = "testing_two"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tokio = "1.0.0"
+
+[nanoservices.nan-one]
+dev_image = "maxwellflitton/nan-one"
+prod_image = "maxwellflitton/nan-one"
+entrypoint = "."
+
+[nanoservices.nan-two]
+dev_image = "maxwellflitton/nan-two"
+prod_image = "maxwellflitton/nan-two"
+entrypoint = "."
+features = ["one", "two"]
+local = true
