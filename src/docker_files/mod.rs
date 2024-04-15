@@ -3,6 +3,7 @@ pub mod unpacking;
 pub mod cache;
 pub mod docker_commands;
 use nanoservices_utils::errors::NanoServiceError;
+use cache::process_image_name;
 
 
 /// Downloads a docker image and unpacks it to the nanoservices cache directory.
@@ -13,7 +14,7 @@ use nanoservices_utils::errors::NanoServiceError;
 /// # Returns
 /// The paths to where the files have been unpacked to from the docker image
 pub fn download_nanoservice(image: &str) -> Result<String, NanoServiceError> {
-    let image_file = image.replace("/", "_").replace(":", "_");
+    let image_file = process_image_name(&image.to_string());
     let main_path = docker_commands::save_docker_image(
         image,
         // unwrap is safe here because we are using a hardcoded path

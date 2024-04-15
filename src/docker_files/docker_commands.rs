@@ -9,6 +9,7 @@ use nanoservices_utils::{
         NanoServiceErrorStatus
     }
 };
+use super::cache::process_image_name;
 
 
 /// Pulls a docker image from the docker registry.
@@ -54,7 +55,7 @@ pub fn save_docker_image(image_name: &str, tar_path: &str) -> Result<String, Nan
 
     let tar_path = std::path::Path::new(tar_path);
     let tar_file = image_name;
-    let tar_file = tar_file.replace("/", "_").replace(":", "_");
+    let tar_file = process_image_name(&tar_file.to_string());
 
     let binding = tar_path.join(format!("{}.tar", tar_file));
     let unpack_tar_path = match binding.to_str() {

@@ -7,32 +7,7 @@ use nanoservices_utils::{
         NanoServiceErrorStatus
     }
 };
-use crate::toml_operations::kernel::{
-    CargoToml, 
-    RawCargoToml
-};
-
-
-/// Reads a Cargo.toml file and returns the parsed CargoToml struct.
-///
-/// # Arguments
-/// * `cargo_toml_path` - The path to the Cargo.toml file.
-///
-/// # Returns
-/// A CargoToml struct representing the parsed Cargo.toml file.
-pub fn read_toml(cargo_toml_path: &str) -> Result<CargoToml, NanoServiceError> {
-    let cargo_toml_contents = safe_eject!(
-        fs::read_to_string(cargo_toml_path),
-        NanoServiceErrorStatus::Unknown,
-        format!("Failed to read Cargo.toml: {}", cargo_toml_path)
-    )?;
-    let cargo_toml: CargoToml = safe_eject!(
-        toml::from_str(&cargo_toml_contents),
-        NanoServiceErrorStatus::Unknown,
-        format!("Failed to parse Cargo.toml: {}", cargo_toml_path)
-    )?;
-    Ok(cargo_toml)
-}
+use crate::toml_operations::kernel::RawCargoToml;
 
 
 /// Writes a CargoToml struct to a Cargo.toml file.

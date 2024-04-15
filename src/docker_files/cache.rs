@@ -4,6 +4,18 @@ use std::path::PathBuf;
 use lazy_static::lazy_static;
 
 
+/// Processes the image name into a directory name.
+/// 
+/// # Arguments
+/// * `image_name` - the name of the image to be processed
+/// 
+/// # Returns
+/// * the converted image name string that can be used in a directory path.
+pub fn process_image_name(image_name: &String) -> String {
+    image_name.replace(":latest", "").replace("/", "_").replace(":", "_")
+}
+
+
 lazy_static! {
     // The current working directory of the terminal calling the program.
     pub static ref CURRENT_WORKING_DIR: PathBuf = {
