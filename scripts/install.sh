@@ -2,7 +2,7 @@
 
 DIR=`mktemp -d`
 
-git clone git@github.com:nanoservicesforge/NanoForge.git $DIR
+git clone https://github.com/nanoservicesforge/NanoForge.git $DIR
 
 
 # Compile the project
