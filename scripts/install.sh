@@ -15,7 +15,7 @@ rm -rf .git
 cargo build --release
 
 # Check for OS and move the binary to the system's bin directory
-if [ "$(uname)" == "Linux" ]; then
+if [ "$(uname)" = "Linux" ]; then
     # Linux
     if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
@@ -23,7 +23,7 @@ if [ "$(uname)" == "Linux" ]; then
     sudo mv target/release/nanoforge /usr/local/bin/
     rm -rf "$DIR"
 
-elif [ "$(uname)" == "Darwin" ]; then
+elif [ "$(uname)" = "Darwin" ]; then
     # macOS
     if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
