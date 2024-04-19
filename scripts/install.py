@@ -29,13 +29,14 @@ def main():
         binary_path = os.path.join(temp_dir, "target", "release", "nanoforge")
         if os.path.exists("/usr/local/bin/nanoforge"):
             os.remove("/usr/local/bin/nanoforge")
-        shutil.move(binary_path, "/usr/local/bin/")
+        subprocess.run(["sudo", "mv", binary_path, "/usr/local/bin/"])
+
     elif platform.system() == "Darwin":
         # macOS
         binary_path = os.path.join(temp_dir, "target", "release", "nanoforge")
         if os.path.exists("/usr/local/bin/nanoforge"):
             os.remove("/usr/local/bin/nanoforge")
-        shutil.move(binary_path, "/usr/local/bin/")
+        subprocess.run(["sudo", "mv", binary_path, "/usr/local/bin/"])
     else:
         print("Unsupported OS")
         shutil.rmtree(temp_dir)
