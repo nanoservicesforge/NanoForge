@@ -1,41 +1,39 @@
 #!/bin/bash
 
-DIR=`mktemp -d`
+DIR=$(mktemp -d)
 
-git clone git@github.com:nanoservicesforge/NanoForge.git $DIR
+git clone https://github.com/nanoservicesforge/NanoForge.git "$DIR"
 
 
 # Compile the project
 # This step varies greatly depending on the project. Adjust as necessary.
-cd $DIR
+cd "$DIR" || exit
 
-# remove the .git folder. This stops it from being "seen" as a git repo. 
+# Remove the .git folder. This stops it from being "seen" as a git repo.
 rm -rf .git
 
 cargo build --release
 
 # Check for OS and move the binary to the system's bin directory
-if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+if [ "$(uname)" = "Linux" ]; then
     # Linux
     if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
     fi
     sudo mv target/release/nanoforge /usr/local/bin/
-    rm -rf $DIR
+    rm -rf "$DIR"
 
-
-# macOS
-elif [[ "$OSTYPE" == "darwin"* ]]; then
+elif [ "$(uname)" = "Darwin" ]; then
+    # macOS
     if [ -e /usr/local/bin/nanoforge ]; then
         sudo rm /usr/local/bin/nanoforge
     fi
     sudo mv target/release/nanoforge /usr/local/bin/
-    rm -rf $DIR
+    rm -rf "$DIR"
 
-# Unsupported
 else
     echo "Unsupported OS"
-    rm -rf $DIR
+    rm -rf "$DIR"
     exit 1
 fi
 
