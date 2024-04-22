@@ -5,7 +5,7 @@ use nanoservices_utils::errors::{
     NanoServiceError,
     NanoServiceErrorStatus
 };
-use toml_operations::nanoservices::processes::prep_nanoservices_once;
+use toml_operations::nanoservices::processes::recursive_prep_nanoservices;
 
 
 fn main() -> Result<(), NanoServiceError> {
@@ -21,11 +21,11 @@ fn main() -> Result<(), NanoServiceError> {
             ))
         }
     };
-
     if command == "prep" {
         println!("prepping nanos");
-        prep_nanoservices_once().unwrap();
-    } else if command == "pull" {
+        recursive_prep_nanoservices()?;
+    }
+    else if command == "pull" {
         let image = match args.get(2) {
             Some(v) => v,
             _ => {
