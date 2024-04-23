@@ -21,14 +21,17 @@ pub fn graph_nanos() -> Result<(), NanoServiceError>{
     let all_cargo_paths = find_all_cargos_interface(true)?;
     let (cargo_dependencies, _) = get_all_nanoservices(all_cargo_paths)?;
 
-    let mut graph_deps = HashMap::new();
+    let mut graph_deps: HashMap<String, Vec<String>> = HashMap::new();
 
     for (cargo_path, nanos) in cargo_dependencies {
         let mut nanoservices = Vec::new();
         for (name, _) in nanos {
-            nanoservices.push(name);
+            nanoservices.push(name.replace(".nanoservices_cache/domain_services/nanoservices/", "nanoservice:"));
         }
-        graph_deps.insert(cargo_path.to_str().unwrap().to_string(), nanoservices);
+        graph_deps.insert(
+            cargo_path.to_str().unwrap().to_string().replace(".nanoservices_cache/domain_services/nanoservices/", "nanoservice:"), 
+            nanoservices
+        );
     }
 
     // Create a directed graph
@@ -39,6 +42,7 @@ pub fn graph_nanos() -> Result<(), NanoServiceError>{
 
     // Insert all nodes into the graph and save their indices
     for (key, deps) in &graph_deps {
+        // .replace(".nanoservices_cache/domain")
         let index = graph.add_node(key);
         node_indices.insert(key, index);
 

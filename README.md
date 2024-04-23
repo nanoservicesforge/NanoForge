@@ -84,3 +84,6 @@ nanoforge graph
 This will create a `nanoserve_dep_graph.png` file in the root of the project. This file will show the dependencies of all the nanoservices in the project like the example below:
 
 ![Nanoservice Dependency Graph](./docs_static/nanoserve_dep_graph.png)
+
+
+![Complex Dependency Graph](./docs_static/graph_one.png)
