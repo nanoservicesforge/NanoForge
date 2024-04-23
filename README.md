@@ -85,5 +85,9 @@ This will create a `nanoserve_dep_graph.png` file in the root of the project. Th
 
 ![Nanoservice Dependency Graph](./docs_static/nanoserve_dep_graph.png)
 
+If you have multiple workspaces referencing nanoservices you can have a more complex dependency graph like the example below:
 
 ![Complex Dependency Graph](./docs_static/graph_one.png)
+
+It also must be noted that nanoservices can also reference and build off each other though it is advised to keep this to a minimum as it can lead to circular dependencies.
+Rely on the `nanoforge graph` command to see the dependencies of the nanoservices in the project.
