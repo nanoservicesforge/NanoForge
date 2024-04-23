@@ -18,5 +18,7 @@ toml = "0.8.12"
 walkdir = "2.5.0"
 pathdiff = "0.2.1"
 nanoservices-utils = "0.1.0"
+petgraph = "0.6.4"
+graphviz-rust = "0.9.0"
 
 [dev-dependencies]
