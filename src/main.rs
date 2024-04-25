@@ -7,7 +7,9 @@ use nanoservices_utils::errors::{
 };
 use toml_operations::nanoservices::processes::{
     prep::recursive_prep_nanoservices,
-    graph::graph_nanos
+    graph::graph_nanos,
+    config::recursive_config_nanoservices,
+    install::recurrsive_install_nanoservices
 };
 
 
@@ -31,6 +33,14 @@ fn main() -> Result<(), NanoServiceError> {
     else if command == "graph" {
         println!("graphing nanos");
         graph_nanos()?;
+    }
+    else if command == "config" {
+        println!("configuring nanos");
+        recursive_config_nanoservices()?;
+    }
+    else if command == "install" {
+        println!("installing nanos");
+        recurrsive_install_nanoservices()?;
     }
     else if command == "pull" {
         let image = match args.get(2) {
