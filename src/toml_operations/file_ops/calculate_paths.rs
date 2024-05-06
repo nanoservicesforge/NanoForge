@@ -19,8 +19,8 @@ use crate::docker_files::cache::process_image_name;
 /// The relative path to the extracted nanoservice.
 pub fn calculate_relative_path(
         cargo_path: &PathBuf, 
-        image: String, 
-        entry: String,
+        image: &String, 
+        entry: &String,
         nanoservices_path: &PathBuf
     ) -> std::io::Result<PathBuf> {
     let current_dir = std::env::current_dir()?;
@@ -70,8 +70,8 @@ mod tests {
 
         let outcome = calculate_relative_path(
             &cargo_path, 
-            "two".to_string(), 
-            ".".to_string(), 
+            &"two".to_string(), 
+            &".".to_string(), 
             &nanoservice_cache_path
         ).unwrap();
 
@@ -94,8 +94,8 @@ mod tests {
 
         let outcome = calculate_relative_path(
             &cargo_path, 
-            "two".to_string(), 
-            ".".to_string(), 
+            &"two".to_string(), 
+            &".".to_string(), 
             &nanoservice_cache_path
         ).unwrap();
 
