@@ -1,5 +1,6 @@
 mod toml_operations;
 mod docker_files;
+mod builds;
 
 use nanoservices_utils::errors::{
     NanoServiceError,
@@ -26,6 +27,7 @@ fn main() -> Result<(), NanoServiceError> {
             ))
         }
     };
+    // dependency management
     if command == "prep" {
         println!("prepping nanos");
         recursive_prep_nanoservices()?;
@@ -55,6 +57,18 @@ fn main() -> Result<(), NanoServiceError> {
         };
 
         let _path = docker_files::download_nanoservice(image)?;
+    }
+    else if command == "new" {
+        let name = match args.get(2) {
+            Some(v) => v,
+            _ => {
+                return Err(NanoServiceError::new(
+                    "No name specified".to_string(),
+                    NanoServiceErrorStatus::Unknown
+                ))
+            }
+        };
+        builds::nanoservice::create_new_nanoservice(name.to_string())?;
     }
     else {
         println!("Command not found");

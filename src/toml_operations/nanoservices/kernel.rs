@@ -34,6 +34,7 @@ pub struct Nanoservice {
 }
 
 
+// TODO => look into abstracting out the add_features and add_package functions into a trait
 impl Nanoservice {
 
     /// Adds features to the nanoservice table if the features exist.
@@ -79,6 +80,7 @@ impl Nanoservice {
         ) -> Result<Option<Map<String, Value>>, NanoServiceError> {
         match &self.kernel {
             Some(kernel) => {
+                // TODO => look into putting the path code below as a function into a utils file for the nanoservices
                 let mut kernel_table = Table::new();
                 let relative_path = safe_eject!(
                     calculate_relative_path(

@@ -7,3 +7,5 @@
 pub mod docker_files;
 #[allow(dead_code)]
 pub mod toml_operations;
+#[allow(dead_code)]
+pub mod builds;
