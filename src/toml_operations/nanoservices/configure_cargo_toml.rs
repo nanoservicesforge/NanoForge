@@ -36,8 +36,8 @@ pub fn config_cargo(
         let relative_path = safe_eject!(
             calculate_relative_path(
                 &cargo_toml_path,
-                nanoservice.dev_image,
-                nanoservice.entrypoint,
+                &nanoservice.dev_image,
+                &nanoservice.entrypoint,
                 &nanoservices_path
             ),
             NanoServiceErrorStatus::Unknown,
@@ -58,21 +58,23 @@ pub fn config_cargo(
             "path".to_string(),
             Value::String(relative_path_str)
         );
-        // add the features to the table if they exist
-        match nanoservice.features {
-            Some(features) => {
-                nanoservice_table.insert(
-                    "features".to_string(),
-                    Value::Array(
-                        features.iter().map(|f|
-                                Value::String(f.to_string())
-                        ).collect()
-                    )
-                );
-            },
-            None => ()
-        }
+        // add optional features
+        nanoservice.add_features(&mut nanoservice_table);
+        nanoservice.add_package(&mut nanoservice_table);
+        
+        // insert the contructed nanoervice table into the dependencies section of the Cargo.toml
         cargo_toml.dependencies.insert(name, toml::Value::Table(nanoservice_table));
+
+        // insert the kernel of the nanoservice into the dependencies section of the Cargo.toml if exists
+        let nanoservice_kernel = match nanoservice.construct_kernel(&cargo_toml_path, &nanoservices_path)? {
+            Some(kernel) => kernel,
+            None => continue
+        };
+        // can directly unwrap here as the kernel is guaranteed to exist otherwise the `nanoservice_kernel` would not have
+        // been constructed
+        let name = nanoservice.kernel.unwrap().name.clone();
+        cargo_toml.dependencies.insert(name, toml::Value::Table(nanoservice_kernel));
+
     }
     Ok(cargo_toml)
 }
